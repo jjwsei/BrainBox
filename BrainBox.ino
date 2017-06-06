@@ -16,8 +16,8 @@ void lightLightShow(void);
 // Sound Functions
 void soundHowLoud(void);
 void soundCountClaps(void);
-void soundHowFar(void);
-void soundTooCloseAlarm(void);
+void soundUltrasonic(void);
+void soundRoomTrap(void);
 
 int pitch2Note(int);
 
@@ -42,13 +42,13 @@ struct menuItem
 
 char *temperature_projects[] = {"How Hot?", "Cool Me Off", "Too Hot!"}; 
 char *light_projects[] = {"How Bright?", "Light/Dark Alarm", "Automatic Light", "Light Music", "Light Show"};
-char *sound_projects[] = {"How Loud?", "Count Claps", "How Far?", "Too Close Alarm"};
+char *sound_projects[] = {"How Loud?", "Count Claps", "Ultrasonic", "Room Trap"};
 
 ProjectFunctions temperatureFPs[] = {tempHowHot, tempCoolMeDown, tempTooHot};
 int temperatureFunctions = 3;
 ProjectFunctions lightFPs[] = {lightHowBright, lightLightDarkAlarm, lightAutoLight, lightMusic, lightLightShow};
 int lightFunctions = 5;
-ProjectFunctions soundFPs[] = {soundHowLoud, soundCountClaps, soundHowFar, soundTooCloseAlarm};
+ProjectFunctions soundFPs[] = {soundHowLoud, soundCountClaps, soundUltrasonic, soundRoomTrap};
 int soundFunctions = 4;
 
 struct menuItem cards[NUMBER_OF_CARDS];
@@ -567,7 +567,7 @@ void soundCountClaps(void)
 }
 
 //*********************************************************************************************
-void soundHowFar(void)
+void soundUltrasonic(void)
 {
   float duration;
   
@@ -597,10 +597,12 @@ void soundHowFar(void)
 }
 
 //*********************************************************************************************
-void soundTooCloseAlarm(void)
+void soundRoomTrap(void)
 {
   float duration;
   int distance = 1;
+  boolean just_once = 0;
+  int i = 0;
   
   pinMode(ultra_trig, OUTPUT);
   pinMode(ultra_echo, INPUT);
@@ -612,8 +614,8 @@ void soundTooCloseAlarm(void)
   lcd.print("Set distance");
   lcd.setCursor(0,1);
   lcd.print("Distance: ");
-   lcd.setCursor(13, 1);
-   lcd.print("in");  
+  lcd.setCursor(13, 1);
+  lcd.print("in");  
   while(start_button_pressed == 0)
   {
      lcd.setCursor(10, 1);
@@ -636,6 +638,11 @@ void soundTooCloseAlarm(void)
   start_button_pressed = 0;
   while(start_button_pressed == 0)
   {   
+    if(just_once == 0)
+    {
+       just_once = 1;
+       delay(5000); 
+    }
     digitalWrite(ultra_trig, HIGH);
     delayMicroseconds(10); 
     digitalWrite(ultra_trig, LOW);
@@ -644,7 +651,13 @@ void soundTooCloseAlarm(void)
     {
       lcd.clear();
       lcd.print("*** ALARM ***");
-      digitalWrite(red_LED, 1);
+      for(i = 0; i < 10; i++)
+      {
+        digitalWrite(red_LED, 1);
+        delay(500);
+        digitalWrite(red_LED, 0);
+        delay(500);
+      }
     }
     else
     {
@@ -658,6 +671,7 @@ void soundTooCloseAlarm(void)
   projectCleanUp();
 }
 
+//*********************************************************************************************
 void updateLCD(int card_index, int project_index)
 {
   char *iName = cards[card_index].itemName;
@@ -682,6 +696,7 @@ void updateLCD(int card_index, int project_index)
   lcd.print(cards[card_index].project_array[project_index]);
 }
 
+//*********************************************************************************************
 void projectCleanUp()
 {
   lcd.clear();
@@ -701,6 +716,7 @@ void projectCleanUp()
   digitalWrite(LED4, 0);
 }
 
+//*********************************************************************************************
 float thermistorRead(int Tpin) 
 {
   int   Vo;
@@ -750,7 +766,7 @@ void soundAlarm() {
 }
 
 
-
+//*********************************************************************************************
 int pitch2Note(int sensorValue)
 {
   float pitch = 0;
@@ -784,6 +800,7 @@ int pitch2Note(int sensorValue)
   return(pitch);
 }
 
+//*********************************************************************************************
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
       strip.setPixelColor(i, c);
